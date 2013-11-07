@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title> HTML 5 Drag & Drop Demo </title>
+<style type="text/css">
+#div1, #div2
+{float:left; width:150px; height:150px; margin:10px;padding:10px;border:1px solid #aaaaaa;}
+</style>
+<script>
+	/** Called when we drag something over the div. ev is the drag event containing information about what is being dragged **/
+	function allowDrop(ev)
+	{
+		// This prevents the web browser from executing the default action
+		// For Example, by default firefox will load images. If we are dragging them
+		// we don't want firefox to do the default action.
+		ev.preventDefault();
+	}
+
+	/** Called when we start dragging an element **/
+	function drag(ev)
+	{
+		// This is where the magic happens. We just started dragging the <img> element.
+		// This is where we set the actual data that will be transferred through the drag
+		// setData(dataFormat, data)
+		// The dataFormat is Text because we are transferring the HTML source of the <img> element, 
+		// not the image itself
+		// ev.target.id is a shortcut to set the data to the actual HTML source of the element we just started to drag.
+
+		ev.dataTransfer.setData("Text",ev.target.id);
+	}
+
+	/** Called when we drop our element into a new place **/
+	function drop(ev)
+	{
+		ev.preventDefault(); // We need to call preventDefault again to stop the browser from loading the image itself
+		
+		// Get the data that we set above in drag(). We can select it by the Format type we chose.
+		var data=ev.dataTransfer.getData("Text");
+		
+		// ev.target is the new <div> we are dropping the image into, so dump the data into the div.
+		ev.target.appendChild(document.getElementById(data));
+	}
+</script>
+</head>
+<body>
+<p> Drag the image back and forth </p>
+<!-- Drag and Drop demo. You can drag and drop HTML elements anywhere over the web page -->
+<!-- We want to drag the html 5 logo from one div to another. -->
+<div id="div1" ondrop="drop(event)" ondragover="allowDrop(event)">
+	<!-- DEMO: Set draggable to true, so the web browser will know this element can be dragged -->
+  <img src="html5.png" draggable="true" ondragstart="drag(event)" id="drag1" width="128" height="128">
+</div>
+
+<!-- DEMO: Here is the destination div. Set it to do something ondrop and ondragover, just like div1 -->
+<div id="div2" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+</body>
+</html>

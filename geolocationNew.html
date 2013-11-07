@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title> Geolocation HTML 5 Example </title>
+<script type="text/javascript">
+	function getLocation()
+	{
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(showLocation);
+		} else {
+			//output.innerHTML="Geolocation is not supported by this browser";
+		}
+	}
+
+	function showLocation(l)
+	{
+		var output=document.getElementById("output");
+		var map = document.getElementById("myMap");
+		output.innerHTML="Latitude: " + l.coords.latitude + "<br>Longitude: " + l.coords.longitude + "<br>Accuracy: " + l.coords.accuracy + "m";
+		map.innerHTML='<iframe width="450" height="350" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://maps.google.com/?ll=' + l.coords.latitude + ',' + l.coords.longitude + '&amp;spn=0.024543,0.038624&amp;z=14&amp;iwloc=A&amp;output=embed"></iframe>'
+	}
+</script>
+</head>
+<body>
+<button onclick="getLocation()">Get Location</button>
+<br>
+<p id="output">
+</p>
+<br>
+<div id="myMap">
+</div>
+</body>
+</html>

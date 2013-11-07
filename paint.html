@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>HTML 5 Canvas Demo</title>
+    <script type="text/javascript" src="jquery.js"></script>
+	<style type="text/css">
+		canvas { border: 1px solid black; }
+	</style>
+  </head>
+  <body>
+
+  <p>Clear the canvas: <button id="clearCanvas" type="button" onclick="clearCanvas()">Clear</button></p>
+  <p>Choose a color: 
+  <!-- Demo 1: Add functionality here. We want to set curColor to the specific colors -->
+  <button type="button" onclick="curColor=colorPurple">Purple</button>
+  <button type="button" onclick="alert('Not Implemented')">Green</button>
+  <button type="button" onclick="alert('Not Implemented')">Yellow</button>
+  <button type="button" onclick="alert('Not Implemented')">Brown</button>
+  <button type="button" onclick="alert('Not Implemented')">Erase</button>
+  </p>
+  <p> <button type="button" onclick="saveToLocalStorage()">Save Canvas</button>
+  <button type="button" onclick="localStorage.clear();">Clear LocalStorage</button>
+  </p>
+  <!-- canvas element. This is all the HTML we need for a canvas. Everything else is JS -->
+  <canvas id="canvas" width="800" height="600"></canvas>
+  
+  <script type="text/javascript"> 
+	/* jQuery hook. When the webpage is done loading, we will call prepareCanvas() */
+	$(document).ready(function() {
+		prepareCanvas();
+	});
+
+	// HTML 5 Canvas variables
+	var canvas;		// This will store the canvas element <canvas> defined above
+	var context;	// HTML5 canvas context object with many properties and methods to draw on the canvas
+	
+	/* Arrays that store each click and drag of the mouse on the canvas.
+	 * This information is used to redraw the canvas everytime we draw a new line.
+	 * It call also be used to save/load the canvas from localStorage.
+	 */
+	var clickX = new Array(); // Array of x-coordinates of each line on the canvas
+	var clickY = new Array(); // Array of corresponding y-coordinates
+	var clickDrag = new Array(); // Boolean array. Lets us know if we are clicking and dragging (which will draw the line) or just clicking
+	
+	// Are we painting on the canvas or just moving the mouse over it? This is set once we start dragging the mouse,
+	// so we know if we should continue drawing the line or not
+	var paint; 
+
+	/// Color Codes. We want our paint app to support many different colors
+	var colorPurple = "#cb3594";
+	var colorGreen = "#659b41";
+	var colorYellow = "#ffcf33";
+	var colorBrown = "#986928";
+	var colorErase = "#FFFFFF";
+
+	var curColor = colorPurple; // This is the current color we are drawing with
+	var clickColor = new Array(); // Store color information for each of our lines, like the above arrays
+
+
+	/** Prepare/Initialize the canvas when the website first loads.
+	 ** Most canvas apps will need a function like this depending on their use
+	 **/
+	function prepareCanvas()
+	{
+		// Get the canvas and context objects. The context object gives us access to the HTML 5 canvas api
+		// That api lets us draw to the canvas with many easy to use properties and methods
+		canvas = document.getElementById('canvas');
+		context = canvas.getContext("2d");
+
+		// Load the canvas from localStorage. If saved, we can reload the canvas the user was currently working on
+		// If they reload the website, or even come back to it many days later
+		loadFromLocalStorage();
+		
+		// After loading, redraw the canvas just in case.
+		redraw();
+		
+		// Not specific to HTML 5 - JavaScript code to detect all the mouse movements, clicking, and dragging
+		// and call the redraw() function to draw any new lines to the canvas
+		$('#canvas').mousedown(function(e){
+			var mouseX = e.pageX - this.offsetLeft;
+			var mouseY = e.pageY - this.offsetTop;
+			
+			paint = true;
+			addClick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop);
+			redraw();
+		});
+
+		$('#canvas').mousemove(function(e){
+			if(paint){
+				addClick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop, true);
+				redraw();
+			}
+		});
+
+		$('#canvas').mouseup(function(e){
+			paint = false;
+		});
+
+		$('#canvas').mouseleave(function(e){
+			paint = false;
+		});
+	}
+
+	/** User clicked on the canvas. Update our arrays with that information
+	 **/
+	function addClick(x, y, dragging)
+	{
+	  clickX.push(x);
+	  clickY.push(y);
+	  clickDrag.push(dragging);
+	  clickColor.push(curColor); // Color Code
+	}
+
+	/** Save state of canvas to localStorage. localStorage is a set of key/value pairs.
+	 ** We need to save the arrays clickX, clickY, clickDrag, and clickColor to localStorage.
+	 ** One limitation of localStorage is that it can only store strings, so we must use JSON to "stringify" 
+	 ** the arrays and then save them. 
+	 **
+	 ** These same localStorage variables will persist forever now, so we can always reload them
+	 **/
+	function saveToLocalStorage()
+	{
+		alert("Not Implemented");
+		return;
+		
+		// Check if localStorage is available on our browser
+		if (typeof(window.localStorage) !== "undefined") {
+			/****************** DEMO 3 localStorage *************************/
+			// localStorage is just a set of key/value pairs saved to the file system. 
+			// Right here we are creating a clickX key in localStorage and saving the value of our clickX array to it.
+			// Since clickX is an array, we must use JSON.stringify to save it.
+			// Do the same for clickY, clickDrag, clickColor:
+			localStorage.clickX = JSON.stringify(clickX);
+
+		} else {
+			// localStorage not available.
+		}
+	}
+	
+	/** Attempt to load the state of the canvas from localStorage
+	 ** and repopulate our arrays
+	 **/
+	function loadFromLocalStorage()
+	{
+		if( typeof( window.localStorage) !== "undefined" ) {
+			// We must check if "clickX" was saved to localStorage. If it was, restore it to our clickX array.
+			// Remember, it was saved as a JSON string. Use JSON.parse to convert it back to array.
+			if (localStorage.clickX) {
+				clickX = JSON.parse(localStorage.clickX);
+			}
+			if (localStorage.clickY) {
+				clickY = JSON.parse(localStorage.clickY);
+			}
+			if (localStorage.clickDrag) {
+				clickDrag = JSON.parse(localStorage.clickDrag);
+			}
+			/****************** DEMO 3 localStorage *************************/
+			// After saving we must load from localStorage.
+			// This is as easy as just setting our array equal to the localStorage variable. 
+			// Load clickColor back from localStorage here:
+
+		} else {
+			alert("localStorage is not supported on your browser.");
+		}
+	}
+	
+	/**
+	 ** Clears the canvas and resets all our arrays. Gives us a clean slate
+	 **/
+	function clearCanvas()
+	{
+		alert("Not Implemented");
+		return;
+		
+		/****************** DEMO 2 Clearing Canvas *************************/
+		// Demo 2 - Change here:
+		// HTML 5 canvas api clearRect() will clear a rectangular space within the canvas.
+		// This is the main way to clear a canvas. The function works as follows
+		// context.clearRect(startingXPosition, startingYPosition, width, height)
+		
+		// In our case, we want to clear the entire canvas. You can get the width/height of the canvas
+		// with the canvas.width and canvas.height properties. Put in context.clearRect(...) call here:
+		
+		
+		// Clear our arrays as well, so everything is reset
+		clickX.length = 0;
+		clickY.length = 0;
+		clickDrag.length = 0;
+		clickColor.length = 0; 
+	} 
+
+	/** Heart of our code. 
+	 ** This draws onto the canvas wherever we drag the mouse.
+	 **/
+	function redraw(){
+	  canvas.width = canvas.width; // Shortcut to clear the canvas, so we can redraw everything.
+	  
+	  // Canvas lineJoin property. What type of corner to create when lines meet
+	  // Can be "round", "bevel", or "miter"
+	  context.lineJoin = "round";
+	  
+	  // Width of the lines we are drawing. Try to increasing this to see what its like
+	  context.lineWidth = 5;
+				
+	  for(var i=0; i < clickX.length; i++)
+	  {
+		// Begin a path/line. Move to a specific position, then create a line (lineTo)
+		// to another ending position.
+		// beginPath property. Tells HTML 5 canvas we are drawing a line
+		context.beginPath();
+		
+		// Are we going in the x direction or y direction?
+		// moveTo() API tells the canvas the starting point (x,y) of our path
+		// lineTo() API tells the canvas the ending point.
+		if(clickDrag[i] && i){
+			context.moveTo(clickX[i-1], clickY[i-1]);
+		} else {
+		   context.moveTo(clickX[i]-1, clickY[i]);
+		}
+		context.lineTo(clickX[i], clickY[i]);
+		
+		context.closePath(); // Tell canvas api our path is finished
+		
+		/****************** DEMO 1 Change Colors *************************/
+		// Tell canvas which color to use to draw the path by setting the strokeStyle property.
+		// Demo 1: Change here. We want to use the current color defined
+		// in the clickColor array: clickColor[i]
+		context.strokeStyle = "#cb3594"; 
+		
+		// stroke() method will draw the path we just defined. It is defined internally
+		// but never drawn to the screen until we call stroke().
+		context.stroke();
+	  }
+	}
+  </script>
+  </body>
+</html>
